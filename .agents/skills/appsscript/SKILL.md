@@ -1,8 +1,78 @@
 ---
-name: appsscript
-description: Describe what this skill does and when to use it. Include keywords that help agents identify relevant tasks.
+name: google-apps-script-practice
+description: 초급 실습용 Google Apps Script 개발 규칙. Google Sheets 연동, XML 데이터 수집, Gmail 사용, HTML 웹 화면 구현 작업에 적용한다.
 ---
 
-<!-- Tip: Use /create-skill in chat to generate content with agent assistance -->
+# Google Apps Script Practice Skill
 
-Define the functionality provided by this skill, including detailed instructions and examples
+초급자가 이해하고 수정할 수 있는 간단한 코드를 우선한다. 불필요한 라이브러리, 복잡한 아키텍처, 과도한 추상화는 사용하지 않는다.
+
+## 1. 기본 프로젝트 구조
+
+필요한 파일만 만들고, 작은 실습은 파일 수를 최소화한다.
+
+- `Code.gs`: Apps Script 서버 코드
+- `Index.html`: HTML, CSS, 브라우저 JavaScript
+- `appsscript.json`: 필요한 경우에만 권한 및 프로젝트 설정
+
+서버 기능은 `.gs`, 화면 기능은 `.html`에 작성한다. HTML에서 Google 서비스에 직접 접근하지 말고 `google.script.run`으로 서버 함수를 호출한다.
+
+## 2. Google Sheets 연동
+
+- `SpreadsheetApp`으로 스프레드시트와 시트를 가져온다.
+- 시트 이름과 열 구조를 코드에 명확히 작성한다.
+- 실습은 조회와 등록부터 구현하고, 필요할 때 수정과 삭제를 추가한다.
+- 여러 행은 `getValues()`로 한 번에 읽고 `setValues()`로 한 번에 쓴다.
+- 입력값이 비어 있는지 서버에서 확인한다.
+- 행 번호를 영구 ID처럼 사용하지 않는다. 수정·삭제 실습에서는 고유 ID 열을 사용한다.
+- 스프레드시트 ID, 시트 이름 등 설정값을 코드 상단에 모아 둔다.
+
+## 3. XML 데이터 수집
+
+- 외부 XML 주소에서 데이터를 가져올 때 `UrlFetchApp.fetch()`를 사용한다.
+- 응답 상태 코드를 확인한 다음 `XmlService.parse()`로 파싱한다.
+- XML의 루트 요소와 필요한 태그 이름을 확인하고 데이터를 추출한다.
+- 태그가 없거나 응답이 비어 있는 경우를 처리한다.
+- `XmlService`는 올바른 XML 문서를 처리한다. 일반 HTML 페이지를 XML로 파싱하면 SAX 파싱 오류가 발생할 수 있다.
+- XML 속성값은 따옴표로 감싸고 태그를 올바르게 닫는다.
+- 사이트 이용약관과 요청 제한을 지키며 로그인 우회나 접근 제한 우회는 하지 않는다.
+- 추출한 텍스트를 HTML에 표시할 때는 안전하게 출력한다.
+
+## 4. Gmail 기능
+
+- 메일 조회는 `GmailApp.search()`와 메시지 조회 기능을 사용한다.
+- 메일 발송은 `GmailApp.sendEmail()`을 사용한다.
+- 실습에서는 먼저 본인 이메일로 테스트한다.
+- 받는 사람, 제목, 본문이 비어 있는지 확인한다.
+- 발송 버튼을 누르기 전에 받는 사람과 내용을 화면에 보여준다.
+- 실제 발송 전 사용자 확인을 받는다.
+- 메일 내용과 첨부파일은 민감한 정보일 수 있으므로 화면과 로그에 불필요하게 노출하지 않는다.
+- Gmail 사용에는 Google 계정 권한 승인이 필요할 수 있다.
+
+## 5. HTML 화면 구성
+
+- `doGet()`에서 `HtmlService.createHtmlOutputFromFile('Index')`를 반환한다.
+- HTML, CSS, JavaScript로 화면을 구성한다.
+- 서버 함수 호출은 `google.script.run`을 사용한다.
+- 비동기 호출에는 `withSuccessHandler()`와 `withFailureHandler()`를 함께 사용한다.
+- 데이터 로딩 중, 결과 없음, 성공, 오류 상태를 화면에 표시한다.
+- 사용자가 입력한 값은 서버에서도 다시 검증한다.
+- 사용자 입력을 화면에 표시할 때 `innerHTML`에 그대로 넣지 말고 `textContent`를 우선 사용한다.
+- 모바일에서도 사용할 수 있도록 간단한 반응형 레이아웃을 적용한다.
+
+## 6. 초급자용 코드 작성 원칙
+
+- 한 함수는 한 가지 일을 하도록 작성한다.
+- 함수와 변수 이름은 역할이 드러나도록 작성한다.
+- 복잡한 디자인 패턴이나 불필요한 클래스는 피한다.
+- 먼저 최소 기능을 실행한 뒤 기능을 하나씩 추가한다.
+- 기존 프로젝트 파일과 코드를 먼저 확인하고, 요청하지 않은 파일은 임의로 삭제하거나 전면 수정하지 않는다.
+- 오류가 발생하면 원인과 수정 위치를 쉬운 말로 설명한다.
+
+## 7. 개발 원칙
+
+1. 사용자가 요청한 기능부터 구현한다.
+2. 한 번에 여러 기능을 구현하지 않는다.
+3. 기존 코드와 연결 관계를 확인한다.
+4. 각 기능을 구현한 후 실행 방법을 설명한다.
+5. 다음 기능은 현재 기능이 정상 작동한 후 추가한다.
